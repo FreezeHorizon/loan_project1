@@ -107,38 +107,39 @@ function calculate_dynamic_monthly_interest_rate($credit_score, $loan_amount, $l
 
     // Adjustments (as decimals, e.g., 0.05% = 0.0005)
     $score_adjustment = 0.0;
-    if ($credit_score >= 750) {
-        $score_adjustment = -0.0005; // -0.05%
+    if ($credit_score >= 750) { // Excellent
+        $score_adjustment = -0.0005; 
     } elseif ($credit_score >= 550 && $credit_score <= 649) { // Fair
-        $score_adjustment = 0.0005;  // +0.05%
+        $score_adjustment = 0.0005;
     } elseif ($credit_score >= 450 && $credit_score <= 549) { // Poor
-        $score_adjustment = 0.0010;  // +0.10%
+        $score_adjustment = 0.0010;
     } elseif ($credit_score < 450) { // Very Poor
-        $score_adjustment = 0.0015;  // +0.15%
+        $score_adjustment = 0.0015;
     }
-    // Note: Good (650-749) has no score_adjustment from base
+    // Good (650-749) has no score_adjustment from base
 
     $amount_adjustment = 0.0;
-    if ($loan_amount > 5000) { // Large
-        $amount_adjustment = -0.0002; // -0.02%
-    } elseif ($loan_amount <= 1000) { // Small
-        $amount_adjustment = 0.0002;  // +0.02%
+    // Adjusted thresholds for PHP currency
+    if ($loan_amount > 50000) { // Example: Large loan in PHP
+        $amount_adjustment = -0.0002; 
+    } elseif ($loan_amount <= 5000) { // Example: Small loan in PHP
+        $amount_adjustment = 0.0002;  
     }
-    // Note: Medium ($1001 - $5000) has no amount_adjustment
+    // Medium loan (e.g., ₱5001 - ₱50000) has no amount_adjustment
 
     $term_adjustment = 0.0;
     if ($loan_term_months >= 18) { // Long
-        $term_adjustment = 0.0005;  // +0.05%
+        $term_adjustment = 0.0005;
     } elseif ($loan_term_months <= 6) { // Short
-        $term_adjustment = -0.0002; // -0.02%
+        $term_adjustment = -0.0002;
     }
-    // Note: Medium term (9-12 months) has no term_adjustment
+    // Medium term (9-12 months) has no term_adjustment
 
     $effective_rate = $base_monthly_rate + $score_adjustment + $amount_adjustment + $term_adjustment;
 
-    // Apply Min/Max Caps
+    // Apply Min/Max Rate Caps
     $min_rate = 0.0030; // 0.30% monthly
-    $max_rate = 0.0100; // 1.00% monthly
+    $max_rate = 0.0100; // 1.00% monthly (adjust if needed for PHP context)
 
     if ($effective_rate < $min_rate) {
         $effective_rate = $min_rate;
@@ -147,6 +148,6 @@ function calculate_dynamic_monthly_interest_rate($credit_score, $loan_amount, $l
         $effective_rate = $max_rate;
     }
 
-    return round($effective_rate, 4); // Store with 4 decimal places (e.g., 0.0050)
+    return round($effective_rate, 4);
 }
 ?>
