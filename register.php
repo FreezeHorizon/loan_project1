@@ -65,6 +65,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors['password'] = "Password is required.";
     } elseif (strlen($password) < 6) { // Basic length check
         $errors['password'] = "Password must be at least 6 characters long.";
+    } elseif (strlen($password) > 50) { // Optional: Add a max length for raw password
+        $errors['password'] = "Password cannot be longer than 50 characters.";
+    } elseif (!preg_match('/^[a-zA-Z0-9]+$/', $password)) { // <--- ADD THIS LINE
+        $errors['password'] = "Password can only contain letters and numbers (no special characters or spaces).";
     } elseif ($password !== $password_confirm) {
         $errors['password_confirm'] = "Passwords do not match.";
     }

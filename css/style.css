@@ -119,3 +119,16 @@ nav ul li a {
     text-decoration: none;
     color: #333;
 }
+
+.button-link {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #5bc0de; /* Info blue */
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+.button-link:hover {
+    background-color: #31b0d5;
+}

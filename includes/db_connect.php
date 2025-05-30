@@ -26,16 +26,6 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
-// (Optional) Define a function to get the current simulated date easily
-function get_simulated_date($db_connection) {
-    $result = $db_connection->query("SELECT current_simulated_date FROM system_time WHERE id = 1");
-    if ($result && $result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        return $row['current_simulated_date'];
-    }
-    return date('Y-m-d'); // Fallback to real date if not found, though it shouldn't happen
-}
-
 // (Optional) You might want to define your site's base URL here for easier link generation later
 // define('BASE_URL', 'http://localhost/loan_project/');
 ?>
