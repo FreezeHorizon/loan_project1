@@ -1,0 +1,121 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px;
+    background-color: #fff;
+    margin-top: 30px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding: 10px 0;
+    border-bottom: #0779e4 3px solid;
+}
+
+header a {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+header nav {
+    float: right;
+    margin-top:10px;
+}
+header nav ul {
+    padding:0;
+    margin:0;
+    list-style:none;
+}
+header nav ul li {
+    display:inline;
+    padding: 0 20px 0 20px;
+}
+
+
+header .logo {
+    float: left;
+    font-size: 24px;
+    padding-left: 20px;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    box-sizing: border-box; /* Important to include padding and border in the element's total width and height */
+}
+
+input[type="submit"], button {
+    background-color: #5cb85c;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+input[type="submit"]:hover, button:hover {
+    background-color: #4cae4c;
+}
+
+.error {
+    color: red;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.success {
+    color: green;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+/* Basic Form Styling */
+form {
+    padding: 20px;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+/* Navigation */
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+nav ul li a {
+    text-decoration: none;
+    color: #333;
+}
