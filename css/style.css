@@ -132,3 +132,40 @@ nav ul li a {
 .button-link:hover {
     background-color: #31b0d5;
 }
+
+/* Add to css/style.css */
+.simulated-time-display {
+    text-align: right;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background-color: #f0f0f0; /* Light grey background */
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+.site-header { /* Style for the main site header */
+    background: #333;
+    color: #fff;
+    padding: 10px 0; /* Adjust as needed */
+    border-bottom: #0779e4 3px solid; /* Your existing border */
+}
+
+.site-header .logo a { /* Ensure logo link is white like other header links */
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Adjust main-content-area if the container class already provides margin-top */
+.main-content-area {
+    /* If your .container already has margin-top: 30px, you might not need extra margin here,
+       or adjust it. The simulated time display is now inside this. */
+    padding-top: 20px; /* Add some padding at the top of the content area */
+    background-color: #fff; /* Assuming this from your .container style */
+    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Assuming this from your .container style */
+}
+
+.site-footer .container p { /* If you wrap footer text in a container */
+    margin: 0; /* Reset margin if it's already centered by text-align */
+}

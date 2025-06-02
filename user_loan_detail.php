@@ -80,6 +80,19 @@ if ($stmt_loan) {
     $_SESSION['user_message_type'] = "error";
     // redirect(BASE_URL . 'my_loans.php'); // Optional: redirect immediately
 }
+
+$is_overdue_detail = false;
+if ($loan_details && $loan_details['status'] === 'active' && !empty($loan_details['next_payment_due_date'])) {
+    $current_sim_date_obj_detail = new DateTime(get_simulated_date($conn));
+    $grace_period_days_detail = 3; // Should match process_time_advance.php
+    $next_due_date_obj_detail = new DateTime($loan_details['next_payment_due_date']);
+    $due_date_with_grace_obj_detail = clone $next_due_date_obj_detail;
+    $due_date_with_grace_obj_detail->add(new DateInterval('P' . $grace_period_days_detail . 'D'));
+    if ($current_sim_date_obj_detail > $due_date_with_grace_obj_detail) {
+        $is_overdue_detail = true;
+    }
+}
+
 ?>
 
 <h2>Loan Details - ID: <?php echo htmlspecialchars($loan_id); ?></h2>
@@ -94,6 +107,11 @@ if (isset($_SESSION['user_message'])) {
 ?>
 
 <?php if ($loan_details && $user_details_for_loan): ?>
+    <?php if ($is_overdue_detail): ?>
+        <p style="color: red; font-weight: bold; border: 1px solid red; padding: 10px; margin-bottom:15px;">
+            Attention: This loan has an overdue payment according to the current simulated date.
+        </p>
+    <?php endif; ?>
     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-bottom: 20px;">
         <div style="width: 100%; margin-bottom:15px; padding:10px; background-color:#f9f9f9; border:1px solid #eee;">
             <h3>Your Information</h3>
@@ -106,8 +124,8 @@ if (isset($_SESSION['user_message'])) {
         <div style="width: 100%; padding:10px; background-color:#f9f9f9; border:1px solid #eee; margin-top:15px;">
             <h3>Loan Summary</h3>
             <p><strong>Status:</strong> <span style="text-transform: capitalize; font-weight: bold;"><?php echo htmlspecialchars($loan_details['status']); ?></span></p>
-            <p><strong>Amount Requested:</strong> $<?php echo htmlspecialchars(number_format($loan_details['amount_requested'], 2)); ?></p>
-            <p><strong>Amount Approved:</strong> <?php echo $loan_details['amount_approved'] ? '$' . htmlspecialchars(number_format($loan_details['amount_approved'], 2)) : 'N/A'; ?></p>
+            <p><strong>Amount Requested:</strong> ₱<?php echo htmlspecialchars(number_format($loan_details['amount_requested'], 2)); ?></p>
+            <p><strong>Amount Approved:</strong> <?php echo $loan_details['amount_approved'] ? '₱' . htmlspecialchars(number_format($loan_details['amount_approved'], 2)) : 'N/A'; ?></p>
             <p><strong>Term:</strong> <?php echo htmlspecialchars($loan_details['term_months']); ?> months</p>
             <p><strong>Monthly Interest Rate:</strong> <?php echo htmlspecialchars(number_format($loan_details['interest_rate_monthly'] * 100, 2)); ?>%</p>
             <p><strong>Calculated Monthly Payment (EMI):</strong>
@@ -118,14 +136,14 @@ if (isset($_SESSION['user_message'])) {
                         $loan_details['interest_rate_monthly'],
                         $loan_details['term_months']
                     );
-                    echo '$' . htmlspecialchars(number_format($emi, 2));
+                    echo '₱' . htmlspecialchars(number_format($emi, 2));
                 } else {
                     echo 'N/A';
                 }
                 ?>
             </p>
-            <p><strong>Total Repayment Amount:</strong> <?php echo $loan_details['total_repayment_amount'] ? '$' . htmlspecialchars(number_format($loan_details['total_repayment_amount'], 2)) : 'N/A'; ?></p>
-            <p><strong>Remaining Balance:</strong> <?php echo $loan_details['remaining_balance'] !== null ? '$' . htmlspecialchars(number_format($loan_details['remaining_balance'], 2)) : 'N/A'; ?></p>
+            <p><strong>Total Repayment Amount:</strong> <?php echo $loan_details['total_repayment_amount'] ? '₱' . htmlspecialchars(number_format($loan_details['total_repayment_amount'], 2)) : 'N/A'; ?></p>
+            <p><strong>Remaining Balance:</strong> <?php echo $loan_details['remaining_balance'] !== null ? '₱' . htmlspecialchars(number_format($loan_details['remaining_balance'], 2)) : 'N/A'; ?></p>
             <p><strong>Purpose:</strong> <?php echo htmlspecialchars($loan_details['purpose'] ? $loan_details['purpose'] : 'N/A'); ?></p>
         </div>
     </div>
@@ -157,7 +175,7 @@ if (isset($_SESSION['user_message'])) {
                     <tr>
                         <td><?php echo htmlspecialchars($payment['id']); ?></td>
                         <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($payment['payment_date']))); ?></td>
-                        <td>$<?php echo htmlspecialchars(number_format($payment['amount_paid'], 2)); ?></td>
+                        <td>₱<?php echo htmlspecialchars(number_format($payment['amount_paid'], 2)); ?></td>
                         <td style="text-transform: capitalize;"><?php echo htmlspecialchars($payment['payment_type']); ?></td>
                         <td><?php echo htmlspecialchars($payment['notes'] ? $payment['notes'] : 'N/A'); ?></td>
                     </tr>

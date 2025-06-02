@@ -56,13 +56,13 @@ if ($stmt_all) {
                 <tr>
                     <td><?php echo htmlspecialchars($loan['id']); ?></td>
                     <td><?php echo htmlspecialchars($loan['user_username']); ?> (<?php echo htmlspecialchars($loan['user_full_name']); ?>)</td>
-                    <td>$<?php echo htmlspecialchars(number_format($loan['amount_requested'], 2)); ?></td>
-                    <td><?php echo $loan['amount_approved'] ? '$' . htmlspecialchars(number_format($loan['amount_approved'], 2)) : 'N/A'; ?></td>
+                    <td>₱<?php echo htmlspecialchars(number_format($loan['amount_requested'], 2)); ?></td>
+                    <td><?php echo $loan['amount_approved'] ? '₱' . htmlspecialchars(number_format($loan['amount_approved'], 2)) : 'N/A'; ?></td>
                     <td><?php echo htmlspecialchars($loan['term_months']); ?></td>
                     <td><?php echo htmlspecialchars(number_format($loan['interest_rate_monthly'] * 100, 2)); ?>%</td>
                     <td style="text-transform: capitalize;"><?php echo htmlspecialchars($loan['status']); ?></td>
-                    <td><?php echo $loan['total_repayment_amount'] ? '$' . htmlspecialchars(number_format($loan['total_repayment_amount'], 2)) : 'N/A'; ?></td>
-                    <td><?php echo $loan['remaining_balance'] ? '$' . htmlspecialchars(number_format($loan['remaining_balance'], 2)) : 'N/A'; ?></td>
+                    <td><?php echo $loan['total_repayment_amount'] ? '₱' . htmlspecialchars(number_format($loan['total_repayment_amount'], 2)) : 'N/A'; ?></td>
+                    <td><?php echo $loan['remaining_balance'] ? '₱' . htmlspecialchars(number_format($loan['remaining_balance'], 2)) : 'N/A'; ?></td>
                     <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($loan['request_date']))); ?></td>
                     <td><?php echo $loan['approval_date'] ? htmlspecialchars(date('Y-m-d', strtotime($loan['approval_date']))) : 'N/A'; ?></td>
                     <td><?php echo $loan['start_date'] ? htmlspecialchars($loan['start_date']) : 'N/A'; ?></td>

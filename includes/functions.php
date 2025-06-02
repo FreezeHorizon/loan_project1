@@ -39,7 +39,12 @@ function is_logged_in() {
 
 // Function to check if the logged-in user is an admin
 function is_admin() {
-    return (is_logged_in() && isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+    return (is_logged_in() && isset($_SESSION['role']) && ($_SESSION['role'] === 'admin' || $_SESSION['role'] === 'super_admin'));
+}
+
+// Function to check if the logged-in user is a Super Admin
+function is_super_admin() {
+    return (is_logged_in() && isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin');
 }
 
 // Function to redirect to a different page
@@ -103,43 +108,43 @@ function get_simulated_date($db_connection) { // Make sure it accepts $db_connec
 }
 
 function calculate_dynamic_monthly_interest_rate($credit_score, $loan_amount, $loan_term_months) {
-    $base_monthly_rate = 0.0050; // 0.50%
+    $base_monthly_rate = 0.0130; // 1.30%
 
-    // Adjustments (as decimals, e.g., 0.05% = 0.0005)
+    // Adjustments (as decimals, e.g., 0.10% = 0.0010)
     $score_adjustment = 0.0;
     if ($credit_score >= 750) { // Excellent
-        $score_adjustment = -0.0005; 
+        $score_adjustment = -0.0030; 
+    } elseif ($credit_score >= 650 && $credit_score <= 749) { // Good
+        $score_adjustment = -0.0010;
     } elseif ($credit_score >= 550 && $credit_score <= 649) { // Fair
-        $score_adjustment = 0.0005;
-    } elseif ($credit_score >= 450 && $credit_score <= 549) { // Poor
-        $score_adjustment = 0.0010;
-    } elseif ($credit_score < 450) { // Very Poor
         $score_adjustment = 0.0015;
+    } elseif ($credit_score >= 450 && $credit_score <= 549) { // Poor
+        $score_adjustment = 0.0030;
+    } elseif ($credit_score < 450) { // Very Poor
+        $score_adjustment = 0.0050;
     }
-    // Good (650-749) has no score_adjustment from base
 
     $amount_adjustment = 0.0;
-    // Adjusted thresholds for PHP currency
-    if ($loan_amount > 50000) { // Example: Large loan in PHP
-        $amount_adjustment = -0.0002; 
-    } elseif ($loan_amount <= 5000) { // Example: Small loan in PHP
-        $amount_adjustment = 0.0002;  
+    if ($loan_amount > 75000) { // Large loan
+        $amount_adjustment = -0.0010; 
+    } elseif ($loan_amount <= 10000) { // Small loan
+        $amount_adjustment = 0.0015;  
     }
-    // Medium loan (e.g., ₱5001 - ₱50000) has no amount_adjustment
+    // Medium loan (₱10,001 - ₱75,000) has no amount_adjustment
 
     $term_adjustment = 0.0;
-    if ($loan_term_months >= 18) { // Long
-        $term_adjustment = 0.0005;
-    } elseif ($loan_term_months <= 6) { // Short
-        $term_adjustment = -0.0002;
+    if ($loan_term_months >= 18) { // Long term
+        $term_adjustment = 0.0015;
+    } elseif ($loan_term_months <= 6) { // Short term
+        $term_adjustment = -0.0010;
     }
-    // Medium term (9-12 months) has no term_adjustment
+    // Medium term (7-17 months, but typical discrete terms are 9, 12) has no term_adjustment
 
     $effective_rate = $base_monthly_rate + $score_adjustment + $amount_adjustment + $term_adjustment;
 
     // Apply Min/Max Rate Caps
-    $min_rate = 0.0030; // 0.30% monthly
-    $max_rate = 0.0100; // 1.00% monthly (adjust if needed for PHP context)
+    $min_rate = 0.0070; // 0.70% monthly
+    $max_rate = 0.0250; // 2.50% monthly
 
     if ($effective_rate < $min_rate) {
         $effective_rate = $min_rate;

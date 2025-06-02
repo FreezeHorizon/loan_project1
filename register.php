@@ -9,15 +9,16 @@ if (is_logged_in()) {
 
 $errors = [];
 $success_message = '';
-$username = $email = $full_name = ""; // Initialize variables
+$username = $email = $full_name = $monthly_income_input = ""; // Initialize variables
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sanitize inputs
     $username = sanitize_input($_POST['username']);
     $email = sanitize_input($_POST['email']);
     $full_name = sanitize_input($_POST['full_name']);
-    $password = $_POST['password']; // Don't sanitize password before hashing, but validate length etc.
+    $password = $_POST['password']; // Don't sanitize password before hashing, but validate length etc
     $password_confirm = $_POST['password_confirm'];
+    $monthly_income_input = sanitize_input($_POST['monthly_income']); // New field
 
     // Validate Full Name
     if (empty($full_name)) {
@@ -59,7 +60,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $stmt->close();
     }
-
+	
+	if (empty($monthly_income_input)) {
+        $errors['monthly_income'] = "Monthly income is required.";
+    } elseif (!is_numeric($monthly_income_input)) {
+        $errors['monthly_income'] = "Monthly income must be a valid number.";
+    } elseif (floatval($monthly_income_input) < 0) { // Cannot be negative
+        $errors['monthly_income'] = "Monthly income cannot be negative.";
+    } else {
+        $monthly_income_for_db = floatval($monthly_income_input);
+        // Optional: Add a reasonable minimum or maximum check if desired
+        // if ($monthly_income_for_db < 1000) { $errors['monthly_income'] = "Monthly income seems too low."; }
+    }
+	
     // Validate Password
     if (empty($password)) {
         $errors['password'] = "Password is required.";
@@ -75,34 +88,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // If no errors, proceed with registration
     if (empty($errors)) {
-        $password_hash = password_hash($password, PASSWORD_DEFAULT); // Securely hash the password
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        // Insert user into database
-        // Default role is 'user', default credit_score is 500 (as per table definition)
-        $stmt = $conn->prepare("INSERT INTO users (username, email, full_name, password_hash) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssss", $username, $email, $full_name, $password_hash);
+        // Updated INSERT query to include monthly_income
+        $stmt = $conn->prepare("INSERT INTO users (username, email, full_name, monthly_income, password_hash) VALUES (?, ?, ?, ?, ?)");
+        if ($stmt) {
+            // Bind monthly_income (d for decimal/double)
+            $stmt->bind_param("sssds", $username, $email, $full_name, $monthly_income_for_db, $password_hash);
 
-        if ($stmt->execute()) {
-            $success_message = "Registration successful! You can now <a href='login.php'>login</a>.";
-            // Clear form fields after successful registration
-            $username = $email = $full_name = "";
+            if ($stmt->execute()) {
+                $success_message = "Registration successful! You can now <a href='login.php'>login</a>.";
+                $username = $email = $full_name = $monthly_income_input = ""; // Clear all fields
+            } else {
+                $errors['general'] = "Registration failed. Please try again. Error: " . $stmt->error;
+            }
+            $stmt->close();
         } else {
-            $errors['general'] = "Registration failed. Please try again. Error: " . $stmt->error;
+            $errors['general'] = "Database statement preparation failed: " . $conn->error;
         }
-        $stmt->close();
     }
 }
 ?>
 
 <h2>User Registration</h2>
 
-<?php if ($success_message): ?>
-    <p class="success"><?php echo $success_message; ?></p>
-<?php endif; ?>
-
-<?php if (!empty($errors['general'])): ?>
-    <p class="error"><?php echo $errors['general']; ?></p>
-<?php endif; ?>
+<?php if ($success_message): ?><p class="success"><?php echo $success_message; ?></p><?php endif; ?>
+<?php if (!empty($errors['general'])): ?><p class="error"><?php echo $errors['general']; ?></p><?php endif; ?>
 
 <form action="<?php echo htmlspecialchars(BASE_URL . 'register.php'); ?>" method="post">
     <div>
@@ -122,9 +133,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <?php if (isset($errors['email'])): ?><p class="error"><?php echo $errors['email']; ?></p><?php endif; ?>
     </div>
     <div>
+        <label for="monthly_income">Monthly Income (₱):</label>
+        <input type="number" step="1000" id="monthly_income" name="monthly_income" value="<?php echo htmlspecialchars($monthly_income_input); ?>" required min="10000">
+        <?php if (isset($errors['monthly_income'])): ?><p class="error"><?php echo $errors['monthly_income']; ?></p><?php endif; ?>
+    </div>
+    <div>
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
-        <small> (Min. 6 characters)</small>
+        <small> (Min. 6 characters, letters and numbers only)</small>
         <?php if (isset($errors['password'])): ?><p class="error"><?php echo $errors['password']; ?></p><?php endif; ?>
     </div>
     <div>

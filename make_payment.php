@@ -46,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['loan_id']) && isset($_
             $new_status = $loan['status'];
             $new_next_payment_due_date = $loan['next_payment_due_date'];
 
-            if ($new_remaining_balance <= 0.01)) { // Using a small threshold for float comparisons
+            if ($new_remaining_balance <= 0.01) { // Using a small threshold for float comparisons
                 $new_remaining_balance = 0;
                 $new_status = 'paid_off';
                 $new_next_payment_due_date = null; // No next payment
@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['loan_id']) && isset($_
 				}
 			}
             $conn->commit();
-            $_SESSION['payment_message'] = "Payment of $" . number_format($actual_payment_made, 2) . " for loan ID $loan_id processed successfully.";
+            $_SESSION['payment_message'] = "Payment of ₱" . number_format($actual_payment_made, 2) . " for loan ID $loan_id processed successfully.";
             $_SESSION['payment_message_type'] = 'success';
 
         } else {

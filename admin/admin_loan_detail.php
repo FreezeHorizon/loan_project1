@@ -83,8 +83,8 @@ if ($stmt_loan) {
 				<a href="<?php echo BASE_URL; ?>receipt.php?loan_id=<?php echo htmlspecialchars($loan_id); ?>" target="_blank" class="button-link" style="background-color: #f0ad4e;">View/Print Receipt</a>
 			</p>
             <p><strong>Status:</strong> <span style="text-transform: capitalize; font-weight: bold;"><?php echo htmlspecialchars($loan_details['status']); ?></span></p>
-            <p><strong>Amount Requested:</strong> $<?php echo htmlspecialchars(number_format($loan_details['amount_requested'], 2)); ?></p>
-            <p><strong>Amount Approved:</strong> <?php echo $loan_details['amount_approved'] ? '$' . htmlspecialchars(number_format($loan_details['amount_approved'], 2)) : 'N/A'; ?></p>
+            <p><strong>Amount Requested:</strong> ₱<?php echo htmlspecialchars(number_format($loan_details['amount_requested'], 2)); ?></p>
+            <p><strong>Amount Approved:</strong> <?php echo $loan_details['amount_approved'] ? '₱' . htmlspecialchars(number_format($loan_details['amount_approved'], 2)) : 'N/A'; ?></p>
             <p><strong>Term:</strong> <?php echo htmlspecialchars($loan_details['term_months']); ?> months</p>
             <p><strong>Monthly Interest Rate:</strong> <?php echo htmlspecialchars(number_format($loan_details['interest_rate_monthly'] * 100, 2)); ?>%</p>
             <p><strong>Calculated Monthly Payment (EMI):</strong>
@@ -95,14 +95,14 @@ if ($stmt_loan) {
                         $loan_details['interest_rate_monthly'],
                         $loan_details['term_months']
                     );
-                    echo '$' . htmlspecialchars(number_format($emi, 2));
+                    echo '₱' . htmlspecialchars(number_format($emi, 2));
                 } else {
                     echo 'N/A';
                 }
                 ?>
             </p>
-            <p><strong>Total Repayment Amount:</strong> <?php echo $loan_details['total_repayment_amount'] ? '$' . htmlspecialchars(number_format($loan_details['total_repayment_amount'], 2)) : 'N/A'; ?></p>
-            <p><strong>Remaining Balance:</strong> <?php echo $loan_details['remaining_balance'] ? '$' . htmlspecialchars(number_format($loan_details['remaining_balance'], 2)) : 'N/A'; ?></p>
+            <p><strong>Total Repayment Amount:</strong> <?php echo $loan_details['total_repayment_amount'] ? '₱' . htmlspecialchars(number_format($loan_details['total_repayment_amount'], 2)) : 'N/A'; ?></p>
+            <p><strong>Remaining Balance:</strong> <?php echo $loan_details['remaining_balance'] ? '₱' . htmlspecialchars(number_format($loan_details['remaining_balance'], 2)) : 'N/A'; ?></p>
             <p><strong>Purpose:</strong> <?php echo htmlspecialchars($loan_details['purpose'] ? $loan_details['purpose'] : 'N/A'); ?></p>
         </div>
     </div>
@@ -134,7 +134,7 @@ if ($stmt_loan) {
                     <tr>
                         <td><?php echo htmlspecialchars($payment['id']); ?></td>
                         <td><?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($payment['payment_date']))); ?></td>
-                        <td>$<?php echo htmlspecialchars(number_format($payment['amount_paid'], 2)); ?></td>
+                        <td>₱<?php echo htmlspecialchars(number_format($payment['amount_paid'], 2)); ?></td>
                         <td style="text-transform: capitalize;"><?php echo htmlspecialchars($payment['payment_type']); ?></td>
                         <td><?php echo htmlspecialchars($payment['notes'] ? $payment['notes'] : 'N/A'); ?></td>
                     </tr>

@@ -21,6 +21,19 @@ if ($stmt_count) {
     $pending_loans_count = $row_count['count'];
     $stmt_count->close();
 }
+
+// Fetch count of pending admin actions for Super Admins
+$pending_admin_actions_count = 0;
+if (is_super_admin()) {
+    $stmt_admin_actions_count = $conn->prepare("SELECT COUNT(*) as count FROM admin_actions_log WHERE status = 'pending'");
+    if ($stmt_admin_actions_count) {
+        $stmt_admin_actions_count->execute();
+        $result_admin_actions_count = $stmt_admin_actions_count->get_result();
+        $row_admin_actions_count = $result_admin_actions_count->fetch_assoc();
+        $pending_admin_actions_count = $row_admin_actions_count['count'];
+        $stmt_admin_actions_count->close();
+    }
+}
 ?>
 
 <h2>Admin Dashboard</h2>
@@ -37,7 +50,9 @@ if ($stmt_count) {
 
 <h3>Admin Functions:</h3>
 <ul>
-
+    <?php if (is_super_admin()): ?>
+        <li><a href="<?php echo BASE_URL; ?>admin/approve_user_edits.php">Approve Admin Requests</a> (<?php echo $pending_admin_actions_count; ?> Pending)</li>
+    <?php endif; ?>
 	<li><a href="<?php echo BASE_URL; ?>admin/approve_loans.php">Manage & Approve Loans</a> (<span id="adminPendingLoanLinkText"><?php echo $pending_loans_count; ?></span> pending)</li>
 	<li><a href="<?php echo BASE_URL; ?>admin/all_loans.php">View All Loan Records</a></li>
 	<li><a href="<?php echo BASE_URL; ?>admin/manage_users.php">Manage Users</a></li>

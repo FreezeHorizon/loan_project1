@@ -4,34 +4,47 @@
 if (session_status() == PHP_SESSION_NONE) { // Ensure session is started
     session_start();
 }
-require_once __DIR__ . '/db_connect.php'; // Path relative to this file's location
-require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/db_connect.php'; // Establishes $conn, handles basic DB connection
+require_once __DIR__ . '/functions.php';  // Defines helper functions like is_logged_in, is_admin, get_simulated_date
 
-// Define BASE_URL if not already defined in db_connect.php
+// Define BASE_URL if not already defined (e.g., in a central config or db_connect.php)
 if (!defined('BASE_URL')) {
-    // Adjust this if your project is in a subdirectory of htdocs
-    // If loan_project is directly in htdocs, it's /loan_project/
-    // If XAMPP is on a different port, include it e.g., http://localhost:8080/loan_project/
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
     $host = $_SERVER['HTTP_HOST'];
+    // Attempt to determine project folder dynamically. Adjust $project_folder_name if needed.
+    $project_folder_name = 'loan_project';
     $script_name_parts = explode('/', $_SERVER['SCRIPT_NAME']);
-    // Assuming 'loan_project' is the main project folder in htdocs
-    $project_folder_name = 'loan_project'; // Change if your folder name is different
     $base_path_index = array_search($project_folder_name, $script_name_parts);
-    
+
     if ($base_path_index !== false) {
         $base_path = implode('/', array_slice($script_name_parts, 0, $base_path_index + 1)) . '/';
     } else {
-        // Fallback if project folder not found in script path (e.g. directly in htdocs or complex setup)
-        // This might need manual adjustment
-        $base_path = '/'; 
+        // Fallback if project folder is not in the script path (e.g. running from htdocs root)
+        // Or if script is in a deeper subdirectory not matching project_folder_name directly.
+        // This might require manual adjustment for complex setups.
+        // If loan_project is directly in htdocs, this will be '/loan_project/'
+        // If your files are in htdocs/loan_project/some_subdir/file.php, this logic might need refinement
+        // or you might hardcode BASE_URL in a config file.
+        // For a typical XAMPP setup where loan_project is a folder in htdocs:
+        $base_path = '/' . $project_folder_name . '/';
+        if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $base_path . 'index.php')) { // Simple check
+             $base_path = '/'; // Default to root if path seems incorrect
+        }
     }
     define('BASE_URL', $protocol . $host . $base_path);
 }
-$header_simulated_date_str = "N/A"; // Default if DB not connected yet or error
-if (isset($conn) && $conn instanceof mysqli && $conn->ping()) { // Check if $conn is valid
-    // Make sure get_simulated_date is defined (it is, in functions.php)
-    $header_simulated_date_str = get_simulated_date($conn);
+
+// Fetch simulated date to make it available for display in the header section of content
+$header_simulated_date_str = "N/A"; // Default
+if (isset($conn) && $conn instanceof mysqli && $conn->ping()) { // Check if $conn is valid and connection is alive
+    if (function_exists('get_simulated_date')) {
+        $header_simulated_date_str = get_simulated_date($conn);
+    } else {
+        // This case should ideally not happen if functions.php is included correctly
+        $header_simulated_date_str = "Error: get_simulated_date() not found.";
+    }
+} else {
+    $header_simulated_date_str = "N/A (DB Connection Issue)";
 }
 ?>
 <!DOCTYPE html>
@@ -43,9 +56,9 @@ if (isset($conn) && $conn instanceof mysqli && $conn->ping()) { // Check if $con
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>css/style.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">Loaning System</div>
+    <header class="site-header"> <!-- Main Site Header -->
+        <div class="container"> <!-- Inner container for centering header content -->
+            <div class="logo"><a href="<?php echo BASE_URL; ?>index.php">Loaning System</a></div>
             <nav>
                 <ul>
                     <?php if (is_logged_in()): ?>
@@ -58,18 +71,6 @@ if (isset($conn) && $conn instanceof mysqli && $conn->ping()) { // Check if $con
 
                         <?php if (is_admin()): // Link for admin users ?>
                             <li><a href="<?php echo BASE_URL; ?>admin/index.php">Admin Panel</a></li>
-                            <?php
-                                // DECISION POINT: Should admins see a "My Loans" link?
-                                // If an admin account might have had loans as a regular user before becoming admin,
-                                // or if you assign specific "system" loans to an admin for tracking, they might need it.
-                                // If so, you could add it here, perhaps styled differently or with a note.
-                                // Example:
-                                // if (is_admin()) { // Could also check a specific config or another session variable
-                                // echo '<li><a href="' . BASE_URL . 'my_loans.php">View Assigned/Personal Loans</a></li>';
-                                // }
-                                // For now, the default behaviour of your logic is that admins do NOT see "My Loans"
-                                // because the previous `!is_admin()` block handles it.
-                            ?>
                         <?php endif; ?>
 
                         <li><a href="<?php echo BASE_URL; ?>logout.php">Logout (<?php echo htmlspecialchars($_SESSION['username']); ?>)</a></li>
@@ -82,21 +83,23 @@ if (isset($conn) && $conn instanceof mysqli && $conn->ping()) { // Check if $con
             </nav>
         </div>
     </header>
-    <div class="container main-content-area">
-        <div style="text-align: right; margin-bottom: 15px; padding: 5px; background-color: #efefef; border-radius: 3px;">
-            <strong>Simulated System DateTime:</strong> <?php
-                if ($header_simulated_date_str !== "N/A") {
+
+    <div class="container main-content-area"> <!-- Main Page Content Wrapper -->
+        <div class="simulated-time-display">
+            <strong>Simulated System DateTime:</strong> 
+            <?php
+                if ($header_simulated_date_str !== "N/A" && strpos($header_simulated_date_str, "Error:") === false && strpos($header_simulated_date_str, "Issue") === false) {
                     try {
                         $header_sim_date_obj = new DateTime($header_simulated_date_str);
                         echo htmlspecialchars($header_sim_date_obj->format('Y-m-d H:i:s'));
                     } catch (Exception $e) {
-                        echo htmlspecialchars($header_simulated_date_str); // Display raw if format error
+                        // If DateTime conversion fails (e.g., malformed date string from DB somehow)
+                        echo htmlspecialchars($header_simulated_date_str) . " (Invalid Format)";
                     }
                 } else {
-                    echo "N/A (DB connection issue?)";
+                    echo htmlspecialchars($header_simulated_date_str); // Display "N/A" or the error message
                 }
             ?>
         </div>
-    </header>
-    <div class="container">
-    <!-- Main content of each page will go here -->
+        <!-- Individual page content will start after this in each respective page file -->
+        <!-- The closing </div> for main-content-area will be in footer.php -->

@@ -8,6 +8,8 @@ if (!is_logged_in()) {
 
 $user_id = $_SESSION['user_id'];
 $loans = []; // Initialize $loans array
+$current_sim_date_obj = new DateTime(get_simulated_date($conn)); // Get current sim date
+$grace_period_days = 3; // Should match process_time_advance.php
 
 // This block for $payment_due_for_button should be INSIDE the loop
 // $payment_due_for_button = $loan['monthly_payment_display'];
@@ -53,7 +55,7 @@ if (isset($_SESSION['payment_message'])) {
     <table border="1" style="width:100%; border-collapse: collapse; margin-top: 20px;">
         <thead>
             <tr>
-                <th>ID & Details</th> {/* Combined ID and Details link */}
+                <th>ID & Details</th>
                 <th>Status</th>
                 <th>Amount Appr.</th>
                 <th>Term</th>
@@ -67,20 +69,34 @@ if (isset($_SESSION['payment_message'])) {
         </thead>
         <tbody>
             <?php foreach ($loans as $loan): ?>
-                <tr>
+                <?php
+                $is_overdue = false;
+                if ($loan['status'] === 'active' && !empty($loan['next_payment_due_date'])) {
+                    $next_due_date_obj = new DateTime($loan['next_payment_due_date']);
+                    $due_date_with_grace_obj = clone $next_due_date_obj;
+                    $due_date_with_grace_obj->add(new DateInterval('P' . $grace_period_days . 'D'));
+                    if ($current_sim_date_obj > $due_date_with_grace_obj) {
+                        $is_overdue = true;
+                    }
+                }
+                ?>
+                <tr <?php if ($is_overdue) echo 'style="background-color: #fff0f0;"' ?>>
                     <td>
                         <?php echo htmlspecialchars($loan['id']); ?>
                         <br><a href="<?php echo BASE_URL; ?>user_loan_detail.php?loan_id=<?php echo $loan['id']; ?>" style="font-size:0.8em;">Details</a>
                     </td>
-                    <td style="text-transform: capitalize;" class="user-loan-status" data-loan-id="<?php echo $loan['id']; ?>" data-status="<?php echo htmlspecialchars($loan['status']); ?>">
+                    <td style="text-transform: capitalize; <?php if ($is_overdue) echo 'font-weight:bold; color:red;'; ?>" class="user-loan-status" data-loan-id="<?php echo $loan['id']; ?>" data-status="<?php echo htmlspecialchars($loan['status']); ?>">
                         <?php echo htmlspecialchars($loan['status']); ?>
+                        <?php if ($is_overdue): ?>
+                            <br><span style="color:red; font-size:0.8em;">(Overdue)</span>
+                        <?php endif; ?>
                     </td>
-                    <td><?php echo isset($loan['amount_approved']) && $loan['amount_approved'] ? '$' . htmlspecialchars(number_format($loan['amount_approved'], 2)) : 'N/A'; ?></td>
+                    <td><?php echo isset($loan['amount_approved']) && $loan['amount_approved'] ? '₱' . htmlspecialchars(number_format($loan['amount_approved'], 2)) : 'N/A'; ?></td>
                     <td><?php echo htmlspecialchars($loan['term_months']); ?> months</td>
                     <td><?php echo htmlspecialchars(number_format($loan['interest_rate_monthly'] * 100, 2)); ?>%</td>
-                    <td><?php echo isset($loan['total_repayment_amount']) && $loan['total_repayment_amount'] ? '$' . htmlspecialchars(number_format($loan['total_repayment_amount'], 2)) : 'N/A'; ?></td>
-                    <td><?php echo is_numeric($loan['monthly_payment_display']) ? '$' . htmlspecialchars(number_format($loan['monthly_payment_display'], 2)) : $loan['monthly_payment_display']; ?></td>
-                    <td><?php echo isset($loan['remaining_balance']) && $loan['remaining_balance'] !== null ? '$' . htmlspecialchars(number_format($loan['remaining_balance'], 2)) : 'N/A'; ?></td>
+                    <td><?php echo isset($loan['total_repayment_amount']) && $loan['total_repayment_amount'] ? '₱' . htmlspecialchars(number_format($loan['total_repayment_amount'], 2)) : 'N/A'; ?></td>
+                    <td><?php echo is_numeric($loan['monthly_payment_display']) ? '₱' . htmlspecialchars(number_format($loan['monthly_payment_display'], 2)) : $loan['monthly_payment_display']; ?></td>
+                    <td><?php echo isset($loan['remaining_balance']) && $loan['remaining_balance'] !== null ? '₱' . htmlspecialchars(number_format($loan['remaining_balance'], 2)) : 'N/A'; ?></td>
                     <td><?php echo $loan['next_payment_due_date'] ? htmlspecialchars($loan['next_payment_due_date']) : 'N/A'; ?></td>
                     <td class="loan-action-cell">
                         <?php
@@ -94,10 +110,10 @@ if (isset($_SESSION['payment_message'])) {
                                 $payment_due_for_button = round($loan['remaining_balance'], 2);
                             }
                         ?>
-                            <form action="<?php echo BASE_URL; ?>make_payment.php" method="post" onsubmit="return confirm('Confirm payment of $<?php echo number_format(floatval($payment_due_for_button), 2); ?> for loan ID <?php echo $loan['id']; ?>?');">
+                            <form action="<?php echo BASE_URL; ?>make_payment.php" method="post" onsubmit="return confirm('Confirm payment of ₱<?php echo number_format(floatval($payment_due_for_button), 2); ?> for loan ID <?php echo $loan['id']; ?>?');">
                                 <input type="hidden" name="loan_id" value="<?php echo $loan['id']; ?>">
                                 <input type="hidden" name="payment_amount" value="<?php echo floatval($payment_due_for_button); ?>">
-                                <button type="submit">Pay $<?php echo number_format(floatval($payment_due_for_button), 2); ?></button>
+                                <button type="submit">Pay ₱<?php echo number_format(floatval($payment_due_for_button), 2); ?></button>
                             </form>
                         <?php } elseif ($loan['status'] === 'paid_off') { ?>
                             Paid Off

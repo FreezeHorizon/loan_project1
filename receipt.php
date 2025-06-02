@@ -128,11 +128,11 @@ if (is_numeric($monthly_payment_display) && $loan['start_date'] && $loan['status
     <div class="loan-terms">
         <h3>Loan Terms</h3>
         <p><strong>Loan Status:</strong> <span style="text-transform:capitalize;"><?php echo htmlspecialchars($loan['status']); ?></span></p>
-        <p><strong>Amount Approved:</strong> $<?php echo htmlspecialchars(number_format($loan['amount_approved'], 2)); ?></p>
+        <p><strong>Amount Approved:</strong> ₱<?php echo htmlspecialchars(number_format($loan['amount_approved'], 2)); ?></p>
         <p><strong>Loan Term:</strong> <?php echo htmlspecialchars($loan['term_months']); ?> months</p>
         <p><strong>Monthly Interest Rate:</strong> <?php echo htmlspecialchars(number_format($loan['interest_rate_monthly'] * 100, 2)); ?>%</p>
-        <p><strong>Calculated Monthly Payment (EMI):</strong> $<?php echo htmlspecialchars(number_format($monthly_payment_display, 2)); ?></p>
-        <p><strong>Total Repayment Amount:</strong> $<?php echo htmlspecialchars(number_format($loan['total_repayment_amount'], 2)); ?></p>
+        <p><strong>Calculated Monthly Payment (EMI):</strong> ₱<?php echo htmlspecialchars(number_format($monthly_payment_display, 2)); ?></p>
+        <p><strong>Total Repayment Amount:</strong> ₱<?php echo htmlspecialchars(number_format($loan['total_repayment_amount'], 2)); ?></p>
         <p><strong>Loan Start Date:</strong> <?php echo $loan['start_date'] ? htmlspecialchars($loan['start_date']) : 'N/A'; ?></p>
         <p><strong>Request Date:</strong> <?php echo htmlspecialchars(date('Y-m-d H:i:s', strtotime($loan['request_date']))); ?></p>
         <p><strong>Approval Date:</strong> <?php echo $loan['approval_date'] ? htmlspecialchars(date('Y-m-d H:i:s', strtotime($loan['approval_date']))) : 'N/A'; ?></p>
@@ -154,7 +154,7 @@ if (is_numeric($monthly_payment_display) && $loan['start_date'] && $loan['status
                 <tr>
                     <td><?php echo $payment['installment']; ?></td>
                     <td><?php echo $payment['due_date']; ?></td>
-                    <td>$<?php echo number_format($payment['amount'], 2); ?></td>
+                    <td>₱<?php echo number_format($payment['amount'], 2); ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>
