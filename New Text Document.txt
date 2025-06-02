@@ -1,0 +1,79 @@
+CREATE TABLE loans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    amount_requested DECIMAL(10, 2) NOT NULL,
+    amount_approved DECIMAL(10, 2) NULL,
+    term_months INT NOT NULL,
+    monthly_interest_rate DECIMAL(5, 4) NULL, -- e.g., 0.0130 for 1.30%
+    monthly_payment_amount DECIMAL(10, 2) NULL, -- EMI
+    total_repayment_amount DECIMAL(10, 2) NULL,
+    status ENUM('pending', 'approved', 'active', 'paid', 'rejected', 'defaulted', 'cancelled_by_admin', 'settled_default', 'paid_post_default') NOT NULL DEFAULT 'pending',
+    request_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approval_date TIMESTAMP NULL,
+    loan_start_date DATE NULL,
+    first_payment_due_date DATE NULL,
+    next_payment_due_date DATE NULL,
+    theoretical_end_date DATE NULL, -- The originally calculated loan end date
+    loan_end_term_date DATE NULL, -- The actual end date if extended or changed
+    remaining_balance DECIMAL(10, 2) NULL,
+    grace_period_days INT DEFAULT 7,
+    penalty_amount_standard DECIMAL(10, 2) DEFAULT 200.00,
+    penalty_amount_escalated DECIMAL(10, 2) DEFAULT 250.00,
+    last_penalty_applied_date DATE NULL,
+    last_escalated_penalty_week DATE NULL,
+    last_default_interest_accrual_date DATE NULL DEFAULT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    full_name VARCHAR(255) NULL,
+    monthly_income DECIMAL(10, 2) NULL,
+    role ENUM('user', 'admin', 'super_admin') NOT NULL DEFAULT 'user',
+    credit_score INT DEFAULT 600,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE loan_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    loan_id INT NOT NULL,
+    user_id INT NOT NULL,
+    amount_paid DECIMAL(10, 2) NOT NULL,
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_method VARCHAR(50) NULL, -- e.g., 'Online', 'Card', 'Admin Settlement', 'Default Interest Accrual'
+    payment_type VARCHAR(50) NULL, -- e.g., 'emi', 'penalty', 'prepayment', 'settlement', 'default_interest'
+    notes TEXT NULL,
+    FOREIGN KEY (loan_id) REFERENCES loans(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE admin_actions_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_user_id INT NOT NULL,
+    target_user_id INT NULL, -- ID of the user whose record is being changed, or the user who owns the loan
+    action_type VARCHAR(255) NOT NULL, -- e.g., 'edit_user_details', 'approve_loan', 'edit_loan_details', 'request_loan_deletion'
+    target_object_id INT NULL, -- For loan actions, this will be the loan_id. For user edits, can be target_user_id or NULL
+    current_values JSON NULL, -- JSON string of original values
+    proposed_changes JSON NULL, -- JSON string of proposed new values
+    admin_reason TEXT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- pending, approved, rejected
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_by_super_admin_id INT NULL,
+    reviewed_at TIMESTAMP NULL,
+    super_admin_remarks TEXT NULL,
+    FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE SET NULL, -- Or ON DELETE CASCADE depending on policy
+    FOREIGN KEY (target_user_id) REFERENCES users(id) ON DELETE SET NULL, -- Or ON DELETE CASCADE
+    FOREIGN KEY (reviewed_by_super_admin_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE system_time (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    current_simulated_date DATETIME NOT NULL, -- The column name is current_simulated_date
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+INSERT INTO simulated_time (current_sim_date) VALUES (NOW());
+
